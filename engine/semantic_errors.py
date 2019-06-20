@@ -1,0 +1,1 @@
+ERROR_ON_LN_COL = 'Line %d, Column %d: '
