@@ -9,7 +9,16 @@ from PyQt5.QtWidgets import QDialog, QFileDialog, QMessageBox
 from copy import deepcopy
 from UI import Ui_MainWindow
 
-from engine import Builder, Checker, Collector, Format, Inferer
+from engine import (
+    Builder,
+    Checker,
+    Collector,
+    Format,
+    Inferer,
+    evaluate_reverse_parse,
+    tokenizer,
+    CoolParser,
+)
 
 
 class GramarUI(Ui_MainWindow):
@@ -122,14 +131,25 @@ class GramarUI(Ui_MainWindow):
 
         Header = "RESULTADOS:\n\n"
 
+        self.type_collector_errors = []
+        self.type_builder_errors = []
+        self.type_checker_errors = []
+        self.type_inferer_errors = []
+
         res = Header + self.get_AST_info()
         self.textAST.setPlainText(res)
 
         res = Header + self.get_Collector_info()
         self.textCollector.setPlainText(res)
 
+        if self.type_collector_errors:
+            return
+
         res = Header + self.get_Builder_info()
         self.textBuilder.setPlainText(res)
+
+        if self.type_builder_errors:
+            return
 
         res = Header + self.get_Checker_info()
         self.textChecker.setPlainText(res)
@@ -141,17 +161,30 @@ class GramarUI(Ui_MainWindow):
 
     def get_AST_info(self) -> str:  # TODO: all down here
         res = ""
-        # en self.parse
-        # y self.operations esta la salida de coolparser()
-        # no te preocupes de como llego a ahi solo usalo
-        #
-        # #
-        # Insert your code here!!!
+
+        self.tokens = tokenizer(self.textEditCode.toPlainText())
+        self.parse, self.operations = CoolParser(self.tokens)
+        self.ast = evaluate_reverse_parse(self.parse, self.operations, self.tokens)
+        formatter = Format()
+
+        self.tree = formatter.visit(self.ast, 0)
+        res += str(tree)
         return res
 
     def get_Collector_info(self) -> str:
         res = ""
-        # Insert your code here!!!
+
+        self.collector = Collector(self.type_collector_errors)
+
+        self.collector.visit(self.ast)
+
+        context = self.collector.context
+
+        res += (
+            str(context) + "\n\n" + "No hubieron errores.\n"
+            if not self.type_collector_errors
+            else "[\n\t" + "\n\t".join(str(err) for err in self.type_collector_errors) + "\ns]"
+        )
         return res
 
     def get_Builder_info(self) -> str:  # TODO: all down here
