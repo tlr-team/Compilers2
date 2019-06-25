@@ -197,15 +197,23 @@ class GramarUI(Ui_MainWindow):
         context = self.collector.context
 
         res += (
-            str(context) + "\n\n" + "No hubieron errores.\n"
+            "Context:\n" + str(context) + "\n\n" + "No hubieron errores.\n"
             if not self.type_collector_errors
-            else "[\n\t" + "\n\t".join(str(err) for err in self.type_collector_errors) + "\ns]"
+            else "Errores: "+"[\n\t" + "\n\t".join(str(err) for err in self.type_collector_errors) + "\n]"
         )
         return res
 
     def get_Builder_info(self) -> str:  # TODO: all down here
         res = ""
-        # Insert your code here!!!
+        self.builder = Builder(self.collector.context, self.type_builder_errors)
+        self.builder.visit(self.ast)
+        context = self.builder.context
+        
+        res += (
+            "Context:\n" + str(context) + "\n\n" + "No hubieron errores.\n"
+            if not self.type_builder_errors
+            else "Errores: "+"[\n\t" + "\n\t".join(str(err) for err in self.type_builder_errors) + "\n]"
+        )
         return res
 
     def get_Checker_info(self) -> str:
@@ -216,13 +224,13 @@ class GramarUI(Ui_MainWindow):
         return res
 
     def get_Inferer_info(self) -> str:
-        res = "Inferences"
+        res = "Inferencias\n"
         inferences = []
         inferer = Inferer(self.context, self.type_inferer_errors, inferences)
         while inferer.visit(self.ast, self.scope):
             pass
         res += "\n".join(i for i in inferences)
-        res += "\nErrors" + "\n".join(e for e in self.type_inferer_errors)
+        res += "\nErrores" + "\n".join(e for e in self.type_inferer_errors)
         return res
 
 
