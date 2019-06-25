@@ -22,6 +22,14 @@ class GramarUI(Ui_MainWindow):
         #
         self.associate_actions()
 
+        #infos
+        self.type_collector_errors = []
+        self.type_builder_errors = []
+        self.type_checker_errors = []
+        self.type_inferer_errors = []
+        self.context = None
+        self.scope = None
+
     def associate_actions(self):
         self.actionLoadCode.triggered.connect(self.load_code)
         self.actionNewCode.triggered.connect(self.new_code)
@@ -91,6 +99,12 @@ class GramarUI(Ui_MainWindow):
         self.operations = None
         self.parse = None
         self._code = None
+        self.type_builder_errors = []
+        self.type_checker_errors = []
+        self.type_collector_errors = []
+        self.type_inferer_errors = []
+        self.scope = None
+        self.context = None
         # clear results and grammar
         self.textAST.setPlainText("")
         self.textChecker.setPlainText("")
