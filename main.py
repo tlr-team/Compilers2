@@ -18,7 +18,7 @@ if not operations:
 ast = evaluate_reverse_parse(parse, operations, tokens)
 formatter = Format()
 
-# en tree se encuentra guardado el ast de cool, esto hay que imprimirlo en un nuevo tab
+# en tree se encuentra guardado el ast de cool, esto hay que imprimirlo en un tab
 tree = formatter.visit(ast,0)
 #print(tree)
 
@@ -37,7 +37,7 @@ collector.visit(ast)
 
 context = collector.context
 
-# context del type collector (solo es imprimirlo)
+# context del type collector (solo es imprimirlo) junto a los type_collector_errors
 print(context)
 
 for error in type_collector_errors:
@@ -49,7 +49,7 @@ builder.visit(ast)
 for error in type_builder_errors:
     print("typebuildererror", error, "\n")
 
-#context actualizado con el type builder (solo imprimirlo)
+#context actualizado con el type builder (solo imprimirlo) junto a los type_checker_errors
 print(context)
 
 checker = Checker(context, type_checker_errors)
@@ -58,12 +58,13 @@ scope = checker.visit(ast)
 for error in type_checker_errors:
     print("typecheckererror", error, "\n")
 
-#print(scope)
+#print(scope) esto no lo imprimas solo los type_checker_errors
 
 inferences = []
 inferer = Inferer(context, type_inferer_errors, inferences)
 while inferer.visit(ast, scope): pass
 
+#esto es lo último
 print("inferences")
 for inference in inferences:
     print(inference)
