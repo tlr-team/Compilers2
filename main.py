@@ -119,9 +119,9 @@ class GramarUI(Ui_MainWindow):
         # clear results and grammar
         self.textAST.setPlainText("")
         self.textChecker.setPlainText("")
+        self.textBuilder.setPlainText("")
         self.textCollector.setPlainText("")
-        self.textCollector.setPlainText("")
-        self.textEditCode.setText("")
+        self.textEditCode.setPlainText("")
 
         self.tabWidget.setCurrentIndex(0)
         self._close_adicional_tabs()
