@@ -4,13 +4,7 @@ from engine.parser import IfThenElseNode, WhileLoopNode, BlockNode, LetInNode, C
 from engine.parser import AssignNode, UnaryNode, BinaryNode, LessEqualNode, LessNode, EqualNode, ArithmeticNode
 from engine.parser import NotNode, IsVoidNode, ComplementNode, FunctionCallNode, MemberCallNode, NewNode, AtomicNode
 from engine.parser import IntegerNode, IdNode, StringNode, BoolNode
-
-INFERENCE_ON = 'Ln %d, Col %d: '
-INF_ATTR = 'On class "%s", attribute "%s": type "%s"'
-INF_PARAM = 'On method "%s" of class "%s", param "%s": type "%s"'
-INF_RETRN = 'Return of method "%s" in class "%s", type "%s"'
-INF_VAR = 'Varible "%s", type "%s"'
-ERROR_ON = 'Ln %d, Col %d: '
+from engine.semantic_errors import ERROR_ON_LN_COL, INFERENCE_ON, INF_ATTR, INF_PARAM, INF_RETRN, INF_VAR
 
 class Inferer:
     def __init__(self, context, errors=[], inferences=[]):
@@ -51,7 +45,7 @@ class Inferer:
             val, error = var.infer_type()
             if val:
                 if error:
-                    self.errors.append("On " + node.id.lex + " " + ERROR_ON % (node.line, node.column) + error)
+                    self.errors.append("On " + node.id.lex + " " + ERROR_ON_LN_COL % (node.line, node.column) + error)
                 self.changed = True
                 attr.type = var.type
                 self.inferences.append(INF_ATTR % (self.current_type.name, attr.name, var.type.name))
@@ -66,11 +60,11 @@ class Inferer:
             expr_type = expression.static_type
 
             var = scope.find_variable(node.id.lex)
-            var.set_upper_type(expr_type)
+            var.set_calls(expr_type)
             val, error = var.infer_type()
             if val:
                 if error:
-                    self.errors.append("On " + node.id.lex + " " + ERROR_ON % (node.line, node.column) + error)
+                    self.errors.append("On " + node.id.lex + " " + ERROR_ON_LN_COL % (node.line, node.column) + error)
                 self.changed = True
                 attr.type = var.type
                 self.inferences.append(INF_ATTR % (self.current_type.name, attr.name, var.type.name))
@@ -86,18 +80,18 @@ class Inferer:
             val, error = var.infer_type()
             if val:
                 if error:
-                    self.errors.append("On " + node.id.lex + " " + ERROR_ON % (node.line, node.column) + error)
+                    self.errors.append("On " + node.id.lex + " " + ERROR_ON_LN_COL % (node.line, node.column) + error)
                 self.changed = True
                 self.current_method.param_types[i] = var.type
                 self.inferences.append(INF_PARAM % (self.current_method.name, self.current_type.name, var.name, var.type.name))
                
         body_type = node.body.static_type
         var = self.current_method.return_info
-        var.set_lower_type(body_type)
+        var.set_assigns(body_type)
         val, error = var.infer_type()
         if val:
             if error:
-                self.errors.append("On " + node.id.lex + " " + ERROR_ON % (node.line, node.column) + error)
+                self.errors.append("On " + node.id.lex + " " + ERROR_ON_LN_COL % (node.line, node.column) + error)
             self.changed = True
             self.current_method.return_type = var.type
             self.inferences.append(INF_RETRN % (self.current_method.name, self.current_type.name, var.type.name))
@@ -139,11 +133,11 @@ class Inferer:
                 self.visit(expr, child_scope, var.type if var.infered else None)
                 expr_type = expr.static_type
                 
-                var.set_upper_type(expr_type)
+                var.set_calls(expr_type)
                 val, error = var.infer_type()
                 if val:
                     if error:
-                        self.errors.append("On " + node.id.lex + " " + ERROR_ON % (node.line, node.column) + error)
+                        self.errors.append("On " + node.id.lex + " " + ERROR_ON_LN_COL % (node.line, node.column) + error)
                     self.changed = True
                     typex.name = var.type.name
                     self.inferences.append(INFERENCE_ON % (idx.line, idx.column) + INF_VAR % (var.name, var.type.name))
@@ -154,7 +148,7 @@ class Inferer:
             val, error = var.infer_type()
             if val:
                 if error:
-                    self.errors.append("On " + node.id.lex + " " + ERROR_ON % (node.line, node.column) + error)
+                    self.errors.append("On " + node.id.lex + " " + ERROR_ON_LN_COL % (node.line, node.column) + error)
                 self.changed = True
                 idx, typex, _ = node.let_body[i]
                 typex.name = var.type.name
@@ -181,7 +175,7 @@ class Inferer:
         self.visit(node.expression, scope.children[0], var.type if var and var.infered else expected_type)
         expr_type = node.expression.static_type
 
-        var.set_lower_type(expr_type)
+        var.set_assigns(expr_type)
         
         node.static_type = expr_type
 
@@ -328,7 +322,7 @@ class Inferer:
             var = scope.find_variable(node.token.lex)
 
             if expected_type:
-                var.set_upper_type(expected_type)
+                var.set_calls(expected_type)
 
             node_type = var.type if var.infered else AutoType()   
         else:

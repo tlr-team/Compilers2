@@ -212,54 +212,54 @@ class VariableInfo:
         self.name = name
         self.type = vtype
         self.infered = not isinstance(vtype, AutoType)
-        self.upper_types = []
-        self.lower_types = []
+        self.calls = []
+        self.assigns = []
 
-    def set_upper_type(self, typex):
+    def set_calls(self, typex):
         if not self.infered and not isinstance(typex, AutoType):
-            self.upper_types.append(typex)
+            self.calls.append(typex)
 
-    def set_lower_type(self, typex):
+    def set_assigns(self, typex):
         if not self.infered:
-            self.lower_types.append(typex)
+            self.assigns.append(typex)
 
     def infer_type(self):
         if not self.infered:
             message = ""
-            t = all(not x.built_in for x in self.upper_types + self.lower_types)
+            t = all(not x.built_in for x in self.calls + self.assigns)
             #print(t)
             if t:
-                upper_type = None
-                for typex in self.upper_types:
-                    if not upper_type or typex.conforms_to(upper_type):
-                        upper_type = typex
-                    elif upper_type.conforms_to(typex):
+                call = None
+                for typex in self.calls:
+                    if not call or typex.conforms_to(call):
+                        call = typex
+                    elif call.conforms_to(typex):
                         pass
                     else:
-                        upper_type = ErrorType()
+                        call = ErrorType()
                         break
 
-                lower_type = None
-                for typex in self.lower_types:
-                    lower_type = typex if not lower_type else lower_type.type_union(typex)
+                assign = None
+                for typex in self.assigns:
+                    assign = typex if not assign else assign.type_union(typex)
 
-                if lower_type:
-                    self.type = lower_type if not upper_type or lower_type.conforms_to(upper_type) else ErrorType()
+                if assign:
+                    self.type = assign if not call or assign.conforms_to(call) else ErrorType()
                 else:
-                    self.type = upper_type
+                    self.type = call
 
                 if not self.type or isinstance(self.type, ErrorType):
                     self.type = AutoType()
 
                 self.infered = not isinstance(self.type, AutoType)
-                self.upper_types = []
-                self.lower_types = []
+                self.calls = []
+                self.assigns = []
 
                 return self.infered, message
             
             else:
                 self.type = None
-                for x in self.lower_types + self.upper_types:
+                for x in self.assigns + self.calls:
                     if x.built_in:
                         self.type = x
                         break
@@ -267,7 +267,7 @@ class VariableInfo:
 
                 #print(self.type.name)
 
-                for x in self.lower_types + self.upper_types:
+                for x in self.assigns + self.calls:
                     if not x.conforms_to(self.type):
                         error.append(x)
                 
@@ -275,8 +275,8 @@ class VariableInfo:
 
                 self.infered = True
 
-                self.upper_types = []
-                self.lower_types = []
+                self.calls = []
+                self.assigns = []
 
                 return True, message
 
