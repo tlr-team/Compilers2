@@ -31,6 +31,15 @@ class GramarUI(Ui_MainWindow):
         #
         self.associate_actions()
 
+        #infos
+        self.type_collector_errors = []
+        self.type_builder_errors = []
+        self.type_checker_errors = []
+        self.type_inferer_errors = []
+        self.context = None
+        self.scope = None
+        self.ast = None
+
     def associate_actions(self):
         self.actionLoadCode.triggered.connect(self.load_code)
         self.actionNewCode.triggered.connect(self.new_code)
@@ -100,6 +109,13 @@ class GramarUI(Ui_MainWindow):
         self.operations = None
         self.parse = None
         self._code = None
+        self.type_builder_errors = []
+        self.type_checker_errors = []
+        self.type_collector_errors = []
+        self.type_inferer_errors = []
+        self.scope = None
+        self.context = None
+        self.ast = None
         # clear results and grammar
         self.textAST.setPlainText("")
         self.textChecker.setPlainText("")
@@ -194,12 +210,19 @@ class GramarUI(Ui_MainWindow):
 
     def get_Checker_info(self) -> str:
         res = ""
-        # Insert your code here!!!
+        checker = Checker(self.context, self.type_checker_errors)
+        self.scope = checker.visit(self.ast)
+        res += "\n".join(x for x in self.type_checker_errors)
         return res
 
     def get_Inferer_info(self) -> str:
-        res = ""
-        # Insert your code here!!!
+        res = "Inferences"
+        inferences = []
+        inferer = Inferer(self.context, self.type_inferer_errors, inferences)
+        while inferer.visit(self.ast, self.scope):
+            pass
+        res += "\n".join(i for i in inferences)
+        res += "\nErrors" + "\n".join(e for e in self.type_inferer_errors)
         return res
 
 
