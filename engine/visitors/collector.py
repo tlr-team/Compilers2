@@ -1,8 +1,8 @@
-from .cp import SemanticError, visitor, Context, SelfType, AutoType
-from .parser import ProgramNode, ClassDeclarationNode
-from .semantic_errors import ERROR_ON_LN_COL
+from engine.cp import SemanticError, visitor, Context, SelfType, AutoType
+from engine.parser import ProgramNode, ClassDeclarationNode
+from engine.semantic_errors import ERROR_ON_LN_COL
 
-class TypeCollector:
+class Collector:
     def __init__(self, errors = []):
         self.context = Context()
         self.errors = errors
@@ -12,11 +12,11 @@ class TypeCollector:
         self.context.add_type(AutoType())
 
         #Tipos Buit-In
-        self.context.create_type('Object')
-        self.context.create_type('Bool')
-        self.context.create_type('Int')
-        self.context.create_type('IO')
-        self.context.create_type('String')
+        self.context.create_type('Object',builtin = True)
+        self.context.create_type('IO',builtin = True)
+        self.context.create_type('Int',builtin = True)
+        self.context.create_type('String',builtin = True)
+        self.context.create_type('Bool',builtin = True)
     
     @visitor.on('node')
     def visit(self, node):

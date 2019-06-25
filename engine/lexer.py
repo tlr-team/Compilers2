@@ -1,6 +1,6 @@
 import ply.lex as lex
 from .parser import CoolGrammar
-from .cmp import Token
+from .cp import Token
 
 
 ###### TOKEN LISTS ######

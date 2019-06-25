@@ -35,12 +35,13 @@ class Method:
             other.param_types == self.param_types
 
 class Type:
-    def __init__(self, name:str, sealed=False):
+    def __init__(self, name:str, sealed=False, built_in = False):
         self.name = name
         self.attributes = []
         self.methods = {}
         self.parent = None
         self.sealed = sealed
+        self.built_in = built_in
 
     def set_parent(self, parent):
         if self.parent is not None:
@@ -161,9 +162,10 @@ class AutoType(Type):
         return isinstance(other, Type)
 
 class ErrorType(Type):
-    def __init__(self):
+    def __init__(self, message = ""):
         Type.__init__(self, '<error>')
         self.sealed = True
+        self.message = message
 
     def union_type(self, other):
         return self
@@ -181,10 +183,10 @@ class Context:
     def __init__(self):
         self.types = {}
 
-    def create_type(self, name:str):
+    def create_type(self, name:str, builtin = False):
         if name in self.types:
             raise SemanticError(f'Type with the same name ({name}) already in context.')
-        typex = self.types[name] = Type(name)
+        typex = self.types[name] = Type(name,built_in=builtin)
         return typex
 
     def add_type(self, typex):
@@ -223,37 +225,69 @@ class VariableInfo:
 
     def infer_type(self):
         if not self.infered:
-            upper_type = None
-            for typex in self.upper_types:
-                if not upper_type or typex.conforms_to(upper_type):
-                    upper_type = typex
-                elif upper_type.conforms_to(typex):
-                    pass
+            message = ""
+            t = all(not x.built_in for x in self.upper_types + self.lower_types)
+            #print(t)
+            if t:
+                upper_type = None
+                for typex in self.upper_types:
+                    if not upper_type or typex.conforms_to(upper_type):
+                        upper_type = typex
+                    elif upper_type.conforms_to(typex):
+                        pass
+                    else:
+                        upper_type = ErrorType()
+                        break
+
+                lower_type = None
+                for typex in self.lower_types:
+                    lower_type = typex if not lower_type else lower_type.type_union(typex)
+
+                if lower_type:
+                    self.type = lower_type if not upper_type or lower_type.conforms_to(upper_type) else ErrorType()
                 else:
-                    upper_type = ErrorType()
-                    break
+                    self.type = upper_type
 
-            lower_type = None
-            for typex in self.lower_types:
-                lower_type = typex if not lower_type else lower_type.type_union(typex)
+                if not self.type or isinstance(self.type, ErrorType):
+                    self.type = AutoType()
 
-            if lower_type:
-                self.type = lower_type if not upper_type or lower_type.conforms_to(upper_type) else ErrorType()
+                self.infered = not isinstance(self.type, AutoType)
+                self.upper_types = []
+                self.lower_types = []
+
+                return self.infered, message
+            
             else:
-                self.type = upper_type
+                self.type = None
+                for x in self.lower_types + self.upper_types:
+                    if x.built_in:
+                        self.type = x
+                        break
+                error = []
 
-            if not self.type or isinstance(self.type, ErrorType):
-                self.type = AutoType()
+                #print(self.type.name)
 
-            self.infered = not isinstance(self.type, AutoType)
-            self.upper_types = []
-            self.lower_types = []
+                for x in self.lower_types + self.upper_types:
+                    if not x.conforms_to(self.type):
+                        error.append(x)
+                
+                message = f"Incompatible Types {self.type.name} and " + " ".join(e.name for e in error) if error else ""
 
-            return self.infered
+                self.infered = True
 
-        return False
+                self.upper_types = []
+                self.lower_types = []
+
+                return True, message
 
 
+        return False, ""
+
+    def __repr__(self):
+        return str(self)
+
+    def __str__(self):
+        return f'Variable Name: {self.name}, Variable Type: {self.type} \n'
             
 
 class Scope:
@@ -288,3 +322,10 @@ class Scope:
 
     def is_local(self, vname):
         return any(True for x in self.locals if x.name == vname)
+    
+    def __repr__(self):
+        return str(self)
+    
+    def __str__(self):
+        return "".join(str(i) for i in self.locals) + "".join(str(s) for s in self.children)
+        #return f'Scope: {self.index}\n' + "\n".join(str(x) for x in self.locals) + "\n".join(str(s) for s in self.children) 

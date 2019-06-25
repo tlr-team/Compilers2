@@ -1,10 +1,10 @@
-from .cp import visitor
-from .parser import ProgramNode, ClassDeclarationNode, AttrDeclarationNode, FuncDeclarationNode
-from .parser import IfThenElseNode, WhileLoopNode, BlockNode, LetInNode, CaseOfNode
-from .parser import AssignNode, UnaryNode, BinaryNode
-from .parser import FunctionCallNode, MemberCallNode, NewNode, AtomicNode
+from engine.cp import visitor
+from engine.parser import ProgramNode, ClassDeclarationNode, AttrDeclarationNode, FuncDeclarationNode
+from engine.parser import IfThenElseNode, WhileLoopNode, BlockNode, LetInNode, CaseOfNode
+from engine.parser import AssignNode, UnaryNode, BinaryNode
+from engine.parser import FunctionCallNode, MemberCallNode, NewNode, AtomicNode
 
-class FormatVisitor:
+class Format:
     @visitor.on('node')
     def visit(self, node, tabs):
         pass

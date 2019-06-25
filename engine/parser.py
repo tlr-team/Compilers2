@@ -1,4 +1,4 @@
-from .cmp import Grammar, LR1Parser
+from .cp import Grammar, LR1Parser
 
 # AST Classes
 class Node:
