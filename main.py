@@ -9,6 +9,8 @@ from PyQt5.QtWidgets import QDialog, QFileDialog, QMessageBox
 from copy import deepcopy
 from UI import Ui_MainWindow
 
+from engine import Builder, Checker, Collector, Format, Inferer
+
 
 class GramarUI(Ui_MainWindow):
     def __init__(self, root):
@@ -33,7 +35,7 @@ class GramarUI(Ui_MainWindow):
         with open(file_name, "r") as file:
             try:
                 self.textEditCode.setPlainText(file.read())
-                    
+
                 if self.tabs:
                     self._close_adicional_tabs()
 
@@ -113,14 +115,16 @@ class GramarUI(Ui_MainWindow):
     def set_results(self):
         if not self.get_ready:
             if self.parse:
-                self.textAST.setPlainText(f"Unexpected token: {self.parse.lex} at Ln: {self.parse.line}, Col {self.parse.column}\n")
+                self.textAST.setPlainText(
+                    f"Unexpected token: {self.parse.lex} at Ln: {self.parse.line}, Col {self.parse.column}\n"
+                )
             return
-        
+
         Header = "RESULTADOS:\n\n"
-        
+
         res = Header + self.get_AST_info()
         self.textAST.setPlainText(res)
-        
+
         res = Header + self.get_Collector_info()
         self.textCollector.setPlainText(res)
 
@@ -132,15 +136,15 @@ class GramarUI(Ui_MainWindow):
 
         res = Header + self.get_Inferer_info()
         self.textInferer.setPlainText(res)
-        
+
         return
-    
-    def get_AST_info(self) -> str:# TODO: all down here
+
+    def get_AST_info(self) -> str:  # TODO: all down here
         res = ""
         # en self.parse
         # y self.operations esta la salida de coolparser()
-        # no te preocupes de como llego a ahi solo usalo       
-        # 
+        # no te preocupes de como llego a ahi solo usalo
+        #
         # #
         # Insert your code here!!!
         return res
@@ -150,11 +154,11 @@ class GramarUI(Ui_MainWindow):
         # Insert your code here!!!
         return res
 
-    def get_Builder_info(self) -> str:# TODO: all down here
+    def get_Builder_info(self) -> str:  # TODO: all down here
         res = ""
         # Insert your code here!!!
         return res
-    
+
     def get_Checker_info(self) -> str:
         res = ""
         # Insert your code here!!!
