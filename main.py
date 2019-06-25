@@ -184,7 +184,7 @@ class GramarUI(Ui_MainWindow):
         formatter = Format()
 
         self.tree = formatter.visit(self.ast, 0)
-        res += str(tree)
+        res += str(self.tree)
         return res
 
     def get_Collector_info(self) -> str:
@@ -194,10 +194,10 @@ class GramarUI(Ui_MainWindow):
 
         self.collector.visit(self.ast)
 
-        context = self.collector.context
+        self.context = self.collector.context
 
         res += (
-            "Context:\n" + str(context) + "\n\n" + "No hubieron errores.\n"
+            "Context:\n" + str(self.context) + "\n\n" + "No hubieron errores.\n"
             if not self.type_collector_errors
             else "Errores: "+"[\n\t" + "\n\t".join(str(err) for err in self.type_collector_errors) + "\n]"
         )
@@ -207,10 +207,10 @@ class GramarUI(Ui_MainWindow):
         res = ""
         self.builder = Builder(self.collector.context, self.type_builder_errors)
         self.builder.visit(self.ast)
-        context = self.builder.context
+        self.context = self.builder.context
         
         res += (
-            "Context:\n" + str(context) + "\n\n" + "No hubieron errores.\n"
+            "Context:\n" + str(self.context) + "\n\n" + "No hubieron errores.\n"
             if not self.type_builder_errors
             else "Errores: "+"[\n\t" + "\n\t".join(str(err) for err in self.type_builder_errors) + "\n]"
         )
@@ -220,7 +220,11 @@ class GramarUI(Ui_MainWindow):
         res = ""
         checker = Checker(self.context, self.type_checker_errors)
         self.scope = checker.visit(self.ast)
-        res += "\n".join(x for x in self.type_checker_errors)
+        res += (
+            "\n\n" + "No hubieron errores.\n"
+            if not self.type_checker_errors
+            else "Errores: "+"[\n\t" + "\n\t".join(str(err) for err in self.type_checker_errors) + "\n]"
+        )
         return res
 
     def get_Inferer_info(self) -> str:
@@ -230,7 +234,11 @@ class GramarUI(Ui_MainWindow):
         while inferer.visit(self.ast, self.scope):
             pass
         res += "\n".join(i for i in inferences)
-        res += "\nErrores" + "\n".join(e for e in self.type_inferer_errors)
+        res += (
+            "\n\n" + "No hubieron errores.\n"
+            if not self.type_inferer_errors
+            else "\n\nErrores: "+"[\n\t" + "\n\t".join(str(err) for err in self.type_inferer_errors) + "\n]"
+        )
         return res
 
 
