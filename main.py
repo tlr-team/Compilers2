@@ -122,6 +122,7 @@ class GramarUI(Ui_MainWindow):
         self.textBuilder.setPlainText("")
         self.textCollector.setPlainText("")
         self.textEditCode.setPlainText("")
+        self.textInferer.setPlainText("")
 
         self.tabWidget.setCurrentIndex(0)
         self._close_adicional_tabs()
