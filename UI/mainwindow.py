@@ -12,6 +12,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtSvg import QSvgRenderer, QSvgWidget
 from PyQt5.QtWidgets import QDialog, QFileDialog, QMessageBox
 
+from engine import CoolParser, tokenizer
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -244,14 +245,14 @@ class Ui_MainWindow(object):
         self._dialog(s, QMessageBox.Warning)
 
     @property
-    def get_code(self):
-        self._code = self.textEditCode.toPlainText()
-        return self._code
-
-    # @property
-    # def code(self, value):
-    #     self._code = str(value)
-    #     self.textEditCode.setPlainText(str(value))
+    def get_ready(self):
+        try:
+            self.parse, self.operations = None,None
+            tokens = tokenizer(self.textEditCode.toPlainText())
+            self.parse, self.operations = CoolParser(tokens)
+        except:
+            return None
+        return self.operations
 
     def create_slot(self, name, info):
         _translate = QtCore.QCoreApplication.translate

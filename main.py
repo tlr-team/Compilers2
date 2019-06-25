@@ -53,14 +53,14 @@ class GramarUI(Ui_MainWindow):
         self._load_code(grm_path)
 
     def _save_code_at(self, file_name):
-        if not self.get_code:
+        if not self.get_ready:
             return
         with open(file_name, "w") as file:
-            file.write(self.get_code)
+            file.write(self.textEditCode.toPlainText())
         return
 
     def save_code_as(self):
-        if not self.get_code:
+        if not self.get_ready:
             return
 
         file_name, _ = QFileDialog.getSaveFileName(
@@ -75,7 +75,7 @@ class GramarUI(Ui_MainWindow):
         return self._save_code_at(self.current_filename)
 
     def save_code(self):
-        if not self.get_code:
+        if not self.get_ready:
             return
 
         if self.current_filename is None:
@@ -86,6 +86,9 @@ class GramarUI(Ui_MainWindow):
     def new_code(self):
         self.grammar = None
         self.current_filename = None
+        self.operations = None
+        self.parse = None
+        self._code = None
         # clear results and grammar
         self.textAST.setPlainText("")
         self.textChecker.setPlainText("")
@@ -98,7 +101,7 @@ class GramarUI(Ui_MainWindow):
         return
 
     def analyse(self):
-        if not self.get_code:
+        if not self.get_ready:
             return
         if self.tabs:
             self._close_adicional_tabs()
@@ -107,24 +110,10 @@ class GramarUI(Ui_MainWindow):
         self.set_results()
         self.tabWidget.setCurrentIndex(1)
 
-        # for parser_name, svg_str in self.svg_imgs:
-        #     assert isinstance(svg_str, str), parser_name
-        #     self.create_slot(parser_name, svg_str)
-
-    ############## Word Belongs ##############
-    def ask_belongs(self):
-        word = self.textEdit_input_belongs.toPlainText().strip("\n \t").split(" ")
-        _word = "" if not self.grammar else self.grammar.tokenize(word)
-        res_belongs, derivation = self.get_belongs_info(_word)
-        self.label_belong_result.setText(res_belongs)
-        if derivation:
-            derivation = derivation._repr_svg_()
-            if derivation:
-                self.create_svg_slot(f"Derivación({','.join(word)})", derivation)
-
-    ############## Parser Results ##############
     def set_results(self):
-        if not self.get_code:
+        if not self.get_ready:
+            if self.parse:
+                self.textAST.setPlainText(f"Unexpected token: {self.parse.lex} at Ln: {self.parse.line}, Col {self.parse.column}\n")
             return
         
         Header = "RESULTADOS:\n\n"
@@ -148,6 +137,11 @@ class GramarUI(Ui_MainWindow):
     
     def get_AST_info(self) -> str:# TODO: all down here
         res = ""
+        # en self.parse
+        # y self.operations esta la salida de coolparser()
+        # no te preocupes de como llego a ahi solo usalo       
+        # 
+        # #
         # Insert your code here!!!
         return res
 
