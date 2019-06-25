@@ -129,16 +129,46 @@ class GramarUI(Ui_MainWindow):
         
         Header = "RESULTADOS:\n\n"
         
-        res += 
+        res = Header + self.get_AST_info()
         self.textAST.setPlainText(res)
+        
+        res = Header + self.get_Collector_info()
         self.textCollector.setPlainText(res)
+
+        res = Header + self.get_Builder_info()
+        self.textBuilder.setPlainText(res)
+
+        res = Header + self.get_Checker_info()
         self.textChecker.setPlainText(res)
+
+        res = Header + self.get_Inferer_info()
         self.textInferer.setPlainText(res)
         
         return
+    
+    def get_AST_info(self) -> str:# TODO: all down here
+        res = ""
+        # Insert your code here!!!
+        return res
 
-    def _get_metainfo(self):
-        
+    def get_Collector_info(self) -> str:
+        res = ""
+        # Insert your code here!!!
+        return res
+
+    def get_Builder_info(self) -> str:# TODO: all down here
+        res = ""
+        # Insert your code here!!!
+        return res
+    
+    def get_Checker_info(self) -> str:
+        res = ""
+        # Insert your code here!!!
+        return res
+
+    def get_Inferer_info(self) -> str:
+        res = ""
+        # Insert your code here!!!
         return res
 
 

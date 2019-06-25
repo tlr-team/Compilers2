@@ -86,6 +86,21 @@ class Ui_MainWindow(object):
         self.gridLayout_4.addWidget(self.textCollector, 0, 0, 1, 1)
         self.tabWidget.addTab(self.tabCollector, "")
         #
+        # Builder Tab
+        #
+        self.tabBuilder = QtWidgets.QWidget()
+        self.tabBuilder.setObjectName("tabBuilder")
+        self.gridLayout_1 = QtWidgets.QGridLayout(self.tabBuilder)
+        self.gridLayout_1.setObjectName("gridLayout_1")
+        font = QtGui.QFont()
+        font.setFamily("Consolas")
+        font.setPointSize(15)
+        self.textBuilder = QtWidgets.QTextBrowser(self.tabBuilder)
+        self.textBuilder.setObjectName("textBuilder")
+        self.textBuilder.setFont(font)
+        self.gridLayout_1.addWidget(self.textBuilder, 0, 0, 1, 1)
+        self.tabWidget.addTab(self.tabBuilder, "")
+        #
         # Checker Tab
         # 
         self.tabChecker = QtWidgets.QWidget()
@@ -184,10 +199,13 @@ class Ui_MainWindow(object):
             self.tabWidget.indexOf(self.tabAST), _translate("MainWindow", "AST")
         )
         self.tabWidget.setTabText(
-            self.tabWidget.indexOf(self.tabChecker), _translate("MainWindow", "Checker")
+            self.tabWidget.indexOf(self.tabCollector), _translate("MainWindow", "Collector")
         )
         self.tabWidget.setTabText(
-            self.tabWidget.indexOf(self.tabCollector), _translate("MainWindow", "Collector")
+            self.tabWidget.indexOf(self.tabBuilder), _translate("MainWindow", "Builder")
+        )
+        self.tabWidget.setTabText(
+            self.tabWidget.indexOf(self.tabChecker), _translate("MainWindow", "Checker")
         )
         self.tabWidget.setTabText(
             self.tabWidget.indexOf(self.tabInferer), _translate("MainWindow", "Inferer")
