@@ -1,74 +1,152 @@
-from engine import *
+from UI import Ui_MainWindow
+
+import gc
+
+from PyQt5 import QtWidgets
+from PyQt5.QtCore import QCoreApplication, pyqtSlot
+from PyQt5.QtWidgets import QDialog, QFileDialog, QMessageBox
+
+from copy import deepcopy
+from UI import Ui_MainWindow
 
 
-f = open("./grammar.txt","r")
+class GramarUI(Ui_MainWindow):
+    def __init__(self, root):
+        Ui_MainWindow.__init__(root)
+        self.root = root
+        self.setupUi(root)
+        # vars
+        self.current_filename = None
+        #
+        self.associate_actions()
 
-t = f.read()
+    def associate_actions(self):
+        self.actionLoadCode.triggered.connect(self.load_code)
+        self.actionNewCode.triggered.connect(self.new_code)
+        self.actionSaveCode.triggered.connect(self.save_code)
+        self.actionSaveCodeAs.triggered.connect(self.save_code_as)
+        self.actionAnalyse.triggered.connect(self.analyse)
+        # self.buttonAskBelongs.clicked.connect(self.ask_belongs)
 
-#print("conteido", t)
+    def _load_code(self, file_name: str):
+        self.current_filename = file_name
+        with open(file_name, "r") as file:
+            try:
+                self.textEditCode.setPlainText(file.read())
+                    
+                if self.tabs:
+                    self._close_adicional_tabs()
 
-tokens = tokenizer(t)
+            except:
+                self.dialog_warning("Ocurrió un error al cargar el archivo.")
+        return
 
-parse, operations = CoolParser(tokens)
+    def load_code(self):
+        import os
 
-if not operations:
-    print(f'Unexpected token: {parse.lex} at Ln: {parse.line}, Col {parse.column}\n')
+        grm_path, _ = QFileDialog.getOpenFileName(
+            self.root, "Cargar código...", "./", "archivo de texto... (*.txt )"
+        )
+        if not grm_path or not os.path.exists(grm_path):
+            return
+        # print(grm_path)
+        self._load_code(grm_path)
+
+    def _save_code_at(self, file_name):
+        if not self.get_code:
+            return
+        with open(file_name, "w") as file:
+            file.write(self.get_code)
+        return
+
+    def save_code_as(self):
+        if not self.get_code:
+            return
+
+        file_name, _ = QFileDialog.getSaveFileName(
+            self.root, "Salvar código...", "./", "Archivos... (*.txt)"
+        )
+
+        if not file_name:
+            # If dialog is cancelled, will return ''
+            return
+
+        self.current_filename = file_name
+        return self._save_code_at(self.current_filename)
+
+    def save_code(self):
+        if not self.get_code:
+            return
+
+        if self.current_filename is None:
+            self.save_code_as()
+        else:
+            self._save_code_at(self.current_filename)
+
+    def new_code(self):
+        self.grammar = None
+        self.current_filename = None
+        # clear results and grammar
+        self.textAST.setPlainText("")
+        self.textChecker.setPlainText("")
+        self.textCollector.setPlainText("")
+        self.textCollector.setPlainText("")
+        self.textEditCode.setText("")
+
+        self.tabWidget.setCurrentIndex(0)
+        self._close_adicional_tabs()
+        return
+
+    def analyse(self):
+        if not self.get_code:
+            return
+        if self.tabs:
+            self._close_adicional_tabs()
+
+        self.code = self._code
+        self.set_results()
+        self.tabWidget.setCurrentIndex(1)
+
+        # for parser_name, svg_str in self.svg_imgs:
+        #     assert isinstance(svg_str, str), parser_name
+        #     self.create_slot(parser_name, svg_str)
+
+    ############## Word Belongs ##############
+    def ask_belongs(self):
+        word = self.textEdit_input_belongs.toPlainText().strip("\n \t").split(" ")
+        _word = "" if not self.grammar else self.grammar.tokenize(word)
+        res_belongs, derivation = self.get_belongs_info(_word)
+        self.label_belong_result.setText(res_belongs)
+        if derivation:
+            derivation = derivation._repr_svg_()
+            if derivation:
+                self.create_svg_slot(f"Derivación({','.join(word)})", derivation)
+
+    ############## Parser Results ##############
+    def set_results(self):
+        if not self.get_code:
+            return
+        
+        Header = "RESULTADOS:\n\n"
+        
+        res += 
+        self.textAST.setPlainText(res)
+        self.textCollector.setPlainText(res)
+        self.textChecker.setPlainText(res)
+        self.textInferer.setPlainText(res)
+        
+        return
+
+    def _get_metainfo(self):
+        
+        return res
 
 
-ast = evaluate_reverse_parse(parse, operations, tokens)
-formatter = Format()
+if __name__ == "__main__":
+    import sys
 
-# en tree se encuentra guardado el ast de cool, esto hay que imprimirlo en un tab
-tree = formatter.visit(ast,0)
-#print(tree)
-
-#aca se encuentran los errores de cada fase de la construccion de los tipos
-#es muy importante que si una lista de estas no es vacía se pare el proceso y no continue hasta que se resuelva,
-#es decir, por ejemplo si type_collector_errors no es vacía no se ejecuta mas nada
-
-type_collector_errors = []
-type_builder_errors = []
-type_checker_errors = []
-type_inferer_errors = []
-
-collector = Collector(type_collector_errors)
-
-collector.visit(ast)
-
-context = collector.context
-
-# context del type collector (solo es imprimirlo) junto a los type_collector_errors
-print(context)
-
-for error in type_collector_errors:
-    print("typecollectorerror", error, "\n")
-
-builder = Builder(context, type_builder_errors)
-builder.visit(ast)
-
-for error in type_builder_errors:
-    print("typebuildererror", error, "\n")
-
-#context actualizado con el type builder (solo imprimirlo) junto a los type_checker_errors
-print(context)
-
-checker = Checker(context, type_checker_errors)
-scope = checker.visit(ast)
-
-for error in type_checker_errors:
-    print("typecheckererror", error, "\n")
-
-#print(scope) esto no lo imprimas solo los type_checker_errors
-
-inferences = []
-inferer = Inferer(context, type_inferer_errors, inferences)
-while inferer.visit(ast, scope): pass
-
-#esto es lo último
-print("inferences")
-for inference in inferences:
-    print(inference)
-
-print("errors")
-for error in type_inferer_errors:
-    print(error)
+    app = QtWidgets.QApplication(sys.argv)
+    MainWindow = QtWidgets.QMainWindow()
+    ui = GramarUI(MainWindow)
+    MainWindow.show()
+    sys.exit(app.exec_())
